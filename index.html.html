@@ -1,0 +1,2759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResourceHub · Repositorio Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #080b10;
+  --bg2:       #0d1018;
+  --bg3:       #111620;
+  --surface:   #161c28;
+  --surface2:  #1c2435;
+  --border:    #222d42;
+  --border2:   #2a3858;
+  --text:      #dde6f5;
+  --text2:     #8a9bbf;
+  --text3:     #4d5d7a;
+  --accent:    #4fd1c5;
+  --accent-d:  #2d9e94;
+  --amber:     #f6ad55;
+  --amber-d:   #c47d20;
+  --blue:      #63b3ff;
+  --green:     #68d391;
+  --red:       #fc8181;
+  --purple:    #b794f4;
+  --pink:      #f687b3;
+  --sidebar-w: 220px;
+  --header-h:  52px;
+  --radius:    8px;
+  --radius-lg: 12px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 14px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Noise overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0;
+}
+
+/* ═══════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════ */
+.topbar {
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 200;
+}
+
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--blue));
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.logo-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: 0.3px;
+}
+
+.logo-name span { color: var(--accent); font-style: italic; }
+
+.topbar-sep {
+  width: 1px; height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  width: 260px;
+  transition: border-color .2s;
+}
+
+.topbar-search:focus-within { border-color: var(--accent); }
+.topbar-search input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+  width: 100%;
+}
+.topbar-search input::placeholder { color: var(--text3); }
+.topbar-search .si { color: var(--text3); font-size: 14px; }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+.topbar-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.topbar-stat strong { color: var(--accent); font-size: 12px; }
+
+.btn-icon {
+  width: 32px; height: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text2); font-size: 15px;
+  transition: all .2s;
+}
+.btn-icon:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.sidebar-section {
+  padding: 6px 12px 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-top: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: all .15s;
+  color: var(--text2);
+  font-size: 13.5px;
+  font-weight: 400;
+  position: relative;
+  text-decoration: none;
+  user-select: none;
+  margin: 1px 8px;
+  border-radius: 6px;
+}
+
+.nav-item:hover { background: var(--surface); color: var(--text); }
+
+.nav-item.active {
+  background: var(--surface2);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 16px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  left: -8px;
+}
+
+.nav-icon { font-size: 15px; flex-shrink: 0; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.nav-item.active .nav-badge {
+  background: rgba(79,209,197,0.15);
+  border-color: var(--accent-d);
+  color: var(--accent);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════ */
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-page { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.section-page.active { display: flex; }
+
+/* ═══════════════════════════════════════════
+   SECTION HEADER (reusable)
+═══════════════════════════════════════════ */
+.sec-header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-shrink: 0;
+  background: var(--bg2);
+}
+
+.sec-header-info { flex: 1; }
+
+.sec-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.sec-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.sec-desc {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.sec-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .18s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #0a1a18;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); transform: translateY(-1px); }
+
+.btn-amber {
+  background: var(--amber);
+  color: #1a0e00;
+  border-color: var(--amber);
+}
+.btn-amber:hover { background: var(--amber-d); border-color: var(--amber-d); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--surface); color: var(--text); border-color: var(--border2); }
+
+.btn-danger {
+  background: rgba(252,129,129,0.1);
+  color: var(--red);
+  border-color: rgba(252,129,129,0.3);
+}
+.btn-danger:hover { background: rgba(252,129,129,0.2); border-color: var(--red); }
+
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-xs { padding: 2px 8px; font-size: 11px; gap: 4px; }
+
+/* ═══════════════════════════════════════════
+   FILTER / TOOLBAR
+═══════════════════════════════════════════ */
+.toolbar {
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--bg3);
+  flex-wrap: wrap;
+}
+
+.toolbar-search {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  width: 220px;
+  transition: border-color .2s;
+}
+.toolbar-search:focus-within { border-color: var(--accent); }
+.toolbar-search input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12.5px; width: 100%;
+}
+.toolbar-search input::placeholder { color: var(--text3); }
+
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  transition: all .15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.chip:hover { border-color: var(--border2); color: var(--text); }
+.chip.active {
+  background: rgba(79,209,197,0.15);
+  border-color: var(--accent-d);
+  color: var(--accent);
+}
+
+.chip-amber.active {
+  background: rgba(246,173,85,0.15);
+  border-color: var(--amber-d);
+  color: var(--amber);
+}
+
+.chip-blue.active {
+  background: rgba(99,179,255,0.15);
+  border-color: #3a7acc;
+  color: var(--blue);
+}
+
+.toolbar-count {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* ═══════════════════════════════════════════
+   CONTENT SCROLL AREA
+═══════════════════════════════════════════ */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.scroll-area::-webkit-scrollbar { width: 6px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.scroll-area::-webkit-scrollbar-thumb:hover { background: var(--border2); }
+
+/* ═══════════════════════════════════════════
+   CARDS GRID
+═══════════════════════════════════════════ */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .2s, transform .2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content:'';
+  position: absolute;
+  top:0; left:0; right:0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity .2s;
+}
+
+.card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.card:hover::before { opacity: 1; }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-emoji {
+  width: 36px; height: 36px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.card-info { flex: 1; min-width: 0; }
+
+.card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-sub {
+  font-size: 11.5px;
+  color: var(--text3);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.card:hover .card-actions { opacity: 1; }
+
+.card-body {
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════
+   TAGS
+═══════════════════════════════════════════ */
+.tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+.tag-accent { background: rgba(79,209,197,0.1); border-color: var(--accent-d); color: var(--accent); }
+.tag-amber  { background: rgba(246,173,85,0.1); border-color: var(--amber-d); color: var(--amber); }
+.tag-blue   { background: rgba(99,179,255,0.1); border-color: #3a7acc; color: var(--blue); }
+.tag-green  { background: rgba(104,211,145,0.1); border-color: #3a7a55; color: var(--green); }
+.tag-red    { background: rgba(252,129,129,0.1); border-color: #a03030; color: var(--red); }
+.tag-purple { background: rgba(183,148,244,0.1); border-color: #6a4aa0; color: var(--purple); }
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text3);
+  gap: 12px;
+}
+
+.empty-icon { font-size: 48px; opacity: .4; }
+.empty-title { font-size: 16px; color: var(--text2); font-weight: 500; }
+.empty-desc { font-size: 13px; max-width: 320px; line-height: 1.6; }
+
+/* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,8,15,0.85);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  animation: modalIn .25s ease;
+}
+
+@keyframes modalIn {
+  from { opacity:0; transform: scale(.96) translateY(8px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text);
+  flex: 1;
+}
+
+.modal-close {
+  width: 28px; height: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); font-size: 16px;
+  transition: all .15s;
+}
+.modal-close:hover { color: var(--red); border-color: var(--red); background: rgba(252,129,129,0.08); }
+
+.modal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.modal-body::-webkit-scrollbar { width: 4px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   FORM FIELDS
+═══════════════════════════════════════════ */
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.field label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.field label span { color: var(--red); margin-left: 2px; }
+
+.field input, .field textarea, .field select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+  resize: vertical;
+}
+
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--accent);
+}
+
+.field input::placeholder, .field textarea::placeholder { color: var(--text3); }
+
+.field select option { background: var(--bg3); }
+
+.field textarea { min-height: 90px; }
+
+.field-hint { font-size: 11px; color: var(--text3); line-height: 1.4; }
+
+/* Emoji picker simple */
+.emoji-grid {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.emoji-opt {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.emoji-opt:hover { background: var(--surface2); }
+.emoji-opt.selected { background: rgba(79,209,197,0.2); outline: 2px solid var(--accent); }
+
+/* ═══════════════════════════════════════════
+   PROMPT CARD (wider content)
+═══════════════════════════════════════════ */
+.prompt-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.prompt-card:hover { border-color: var(--border2); }
+
+.prompt-card-header {
+  padding: 14px 16px 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.prompt-card-body {
+  padding: 12px 16px;
+  background: rgba(0,0,0,.25);
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text2);
+  max-height: 120px;
+  overflow: hidden;
+  position: relative;
+}
+.prompt-card-body::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:32px;
+  background: linear-gradient(transparent, rgba(22,28,40,.95));
+}
+
+.prompt-card-footer {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   AI TABLE (from comparativa-ia.html)
+═══════════════════════════════════════════ */
+.ai-table-scroll {
+  flex: 1;
+  overflow: auto;
+}
+
+.ai-table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.ai-table-scroll::-webkit-scrollbar-track { background: var(--bg); }
+.ai-table-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+table.ai-table {
+  width: 100%;
+  min-width: 1800px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+table.ai-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+table.ai-table th {
+  background: var(--bg3);
+  border-bottom: 2px solid var(--border2);
+  border-right: 1px solid var(--border);
+  padding: 12px 11px;
+  text-align: left;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+table.ai-table th:first-child {
+  position: sticky; left: 0; z-index: 60;
+  background: var(--bg3);
+  min-width: 190px;
+}
+
+table.ai-table th .ci { display: block; font-size: 13px; margin-bottom: 2px; }
+
+table.ai-table td {
+  padding: 11px 11px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid rgba(255,255,255,0.025);
+  vertical-align: top;
+  line-height: 1.5;
+  color: var(--text2);
+}
+
+table.ai-table td:first-child {
+  position: sticky; left: 0; z-index: 10;
+  background: var(--bg2);
+  border-right: 2px solid var(--border2);
+}
+
+table.ai-table tr:hover td { background: rgba(255,255,255,0.018); }
+table.ai-table tr:hover td:first-child { background: rgba(255,255,255,0.03); }
+table.ai-table tr.row-hidden { display: none; }
+
+.ai-table .tool-cell { display: flex; flex-direction: column; gap: 4px; }
+.ai-table .tool-link {
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  text-decoration: none; display: flex; align-items: center; gap: 5px;
+}
+.ai-table .tool-link:hover { color: var(--accent); }
+.ai-table .tool-link .ext { opacity: .3; font-size: 9px; }
+
+/* Category badges */
+.cat-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px;
+  width: fit-content;
+}
+.cat-general  { background: rgba(79,209,197,0.12); color: var(--accent); }
+.cat-math     { background: rgba(246,173,85,0.12); color: var(--amber); }
+.cat-visual   { background: rgba(183,148,244,0.12); color: var(--purple); }
+.cat-writing  { background: rgba(104,211,145,0.12); color: var(--green); }
+.cat-research { background: rgba(99,179,255,0.12); color: var(--blue); }
+.cat-detect   { background: rgba(252,129,129,0.12); color: var(--red); }
+.cat-study    { background: rgba(246,135,179,0.12); color: var(--pink); }
+.cat-tool     { background: rgba(160,174,192,0.12); color: #a0aec0; }
+.cat-other    { background: rgba(113,128,150,0.12); color: #718096; }
+
+/* Rating badges */
+.r { display: inline-flex; align-items: center; gap: 2px; font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.r-exc  { background: rgba(104,211,145,0.15); color: var(--green); }
+.r-good { background: rgba(99,179,255,0.15); color: var(--blue); }
+.r-reg  { background: rgba(246,173,85,0.15); color: var(--amber); }
+.r-bad  { background: rgba(252,129,129,0.15); color: var(--red); }
+.r-na   { background: rgba(113,128,150,0.1); color: #718096; font-size: 10.5px; }
+.r-hi   { background: rgba(104,211,145,0.15); color: var(--green); }
+.r-med  { background: rgba(246,173,85,0.15); color: var(--amber); }
+.r-low  { background: rgba(252,129,129,0.15); color: var(--red); }
+
+.cost-pill { display: inline-block; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-bottom: 3px; }
+.cp-free  { background: rgba(104,211,145,0.15); color: var(--green); }
+.cp-frem  { background: rgba(246,173,85,0.15); color: var(--amber); }
+.cp-paid  { background: rgba(252,129,129,0.15); color: var(--red); }
+
+.ai-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.ai-tag {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 3px; padding: 1px 5px;
+  font-family: 'DM Mono', monospace; font-size: 9.5px; color: var(--text3); white-space: nowrap;
+}
+.ai-note { font-size: 10.5px; color: var(--text3); font-style: italic; margin-top: 2px; }
+
+/* ═══════════════════════════════════════════
+   DASHBOARD SECTION
+═══════════════════════════════════════════ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+
+.stat-card-icon { font-size: 24px; }
+.stat-card-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1;
+}
+.stat-card-label { font-size: 12px; color: var(--text3); font-weight: 400; }
+.stat-card-sub { font-size: 11px; color: var(--text3); }
+
+.stat-accent .stat-card-num { color: var(--accent); }
+.stat-amber  .stat-card-num { color: var(--amber); }
+.stat-blue   .stat-card-num { color: var(--blue); }
+.stat-purple .stat-card-num { color: var(--purple); }
+
+.recent-section { margin-top: 8px; }
+.recent-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.recent-title::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background: var(--border);
+}
+
+.recent-list { display: flex; flex-direction: column; gap: 6px; }
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color .15s;
+  cursor: pointer;
+}
+.recent-item:hover { border-color: var(--border2); }
+
+.recent-item-icon { font-size: 16px; }
+.recent-item-info { flex: 1; min-width: 0; }
+.recent-item-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-item-meta { font-size: 11px; color: var(--text3); }
+.recent-item-type { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); }
+
+/* ═══════════════════════════════════════════
+   TOAST NOTIFICATION
+═══════════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 20px; right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9999;
+}
+
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  animation: toastIn .25s ease;
+  max-width: 320px;
+}
+
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast.info    { border-left: 3px solid var(--accent); }
+
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(20px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+/* ═══════════════════════════════════════════
+   CONFIRM DIALOG
+═══════════════════════════════════════════ */
+.confirm-modal {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6);
+  animation: modalIn .2s ease;
+}
+.confirm-icon { font-size: 36px; margin-bottom: 12px; }
+.confirm-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.confirm-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ═══════════════════════════════════════════
+   STAR RATING
+═══════════════════════════════════════════ */
+.stars { color: var(--amber); font-size: 11px; letter-spacing: -1px; }
+
+/* ═══════════════════════════════════════════
+   WEBSITE CARD
+═══════════════════════════════════════════ */
+.site-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+  display: flex;
+  flex-direction: column;
+}
+.site-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+.site-card-top {
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.site-favicon {
+  width: 36px; height: 36px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.site-card-mid {
+  padding: 0 16px 12px;
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.site-card-url {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--accent);
+  padding: 0 16px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  display: block;
+}
+.site-card-url:hover { color: var(--accent-d); text-decoration: underline; }
+
+.site-card-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   VIEW TOGGLE
+═══════════════════════════════════════════ */
+.view-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.view-btn {
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 14px;
+  transition: all .15s;
+  background: none;
+  border: none;
+}
+.view-btn:hover { color: var(--text); }
+.view-btn.active { background: var(--surface2); color: var(--accent); }
+
+/* ═══════════════════════════════════════════
+   LIST VIEW (alternative)
+═══════════════════════════════════════════ */
+.list-view { display: flex; flex-direction: column; gap: 6px; }
+
+.list-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color .15s;
+}
+.list-item:hover { border-color: var(--border2); }
+.list-item-icon { font-size: 20px; flex-shrink: 0; }
+.list-item-main { flex: 1; min-width: 0; }
+.list-item-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.list-item-desc { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-item-actions { display: flex; gap: 6px; opacity: 0; transition: opacity .15s; }
+.list-item:hover .list-item-actions { opacity: 1; }
+
+/* ═══════════════════════════════════════════
+   IMPORT/EXPORT AREA
+═══════════════════════════════════════════ */
+.io-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.io-zone:hover { border-color: var(--accent-d); }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 52px; }
+  .nav-item span:not(.nav-icon):not(.nav-badge) { display: none; }
+  .nav-badge { display: none; }
+  .sidebar-section { opacity: 0; height: 0; overflow: hidden; padding: 0; margin: 0; }
+  .topbar-search { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ TOP BAR ═══════════════ -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-icon">📦</div>
+    <span class="logo-name">Resource<span>Hub</span></span>
+  </div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-search">
+    <span class="si">🔍</span>
+    <input type="text" id="globalSearch" placeholder="Buscar en todo el repositorio…" oninput="globalSearchFn(this.value)">
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-stat">IAs <strong id="tb-ia">47</strong></div>
+    <div class="topbar-stat">Prompts <strong id="tb-prompts">0</strong></div>
+    <div class="topbar-stat">Sitios <strong id="tb-sites">0</strong></div>
+    <div class="topbar-stat">Otros <strong id="tb-otros">0</strong></div>
+    <button class="btn-icon" onclick="openImportExport()" title="Importar / Exportar datos">💾</button>
+    <button class="btn-icon" onclick="clearAllConfirm()" title="Limpiar datos guardados">🗑️</button>
+  </div>
+</div>
+
+<!-- ═══════════════ APP BODY ═══════════════ -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Principal</div>
+    <div class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard', this)">
+      <span class="nav-icon">🏠</span><span>Dashboard</span>
+    </div>
+
+    <div class="sidebar-section">Repositorios</div>
+    <div class="nav-item" data-section="ias" onclick="switchSection('ias', this)">
+      <span class="nav-icon">🤖</span><span>IAs</span>
+      <span class="nav-badge" id="nb-ia">47</span>
+    </div>
+    <div class="nav-item" data-section="prompts" onclick="switchSection('prompts', this)">
+      <span class="nav-icon">✨</span><span>Prompts</span>
+      <span class="nav-badge" id="nb-prompts">0</span>
+    </div>
+    <div class="nav-item" data-section="sitios" onclick="switchSection('sitios', this)">
+      <span class="nav-icon">🌐</span><span>Sitios Web</span>
+      <span class="nav-badge" id="nb-sites">0</span>
+    </div>
+    <div class="nav-item" data-section="otros" onclick="switchSection('otros', this)">
+      <span class="nav-icon">📂</span><span>Otros Recursos</span>
+      <span class="nav-badge" id="nb-otros">0</span>
+    </div>
+
+    <div class="sidebar-section">Herramientas</div>
+    <div class="nav-item" data-section="settings" onclick="switchSection('settings', this)">
+      <span class="nav-icon">⚙️</span><span>Config / I/O</span>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:12px;" onclick="quickAdd()">＋ Añadir recurso</button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main class="main">
+
+    <!-- ══════════════════════════════════
+         DASHBOARD
+    ══════════════════════════════════ -->
+    <div class="section-page active" id="sec-dashboard">
+      <div class="sec-header">
+        <div class="sec-header-info">
+          <div class="sec-label">Vista General</div>
+          <div class="sec-title">Dashboard</div>
+          <div class="sec-desc">Resumen de todos tus recursos digitales almacenados</div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div class="dashboard-grid" id="dashStats"></div>
+        <div class="recent-section">
+          <div class="recent-title">Añadidos recientemente</div>
+          <div class="recent-list" id="recentList">
+            <div class="empty-state" style="padding:24px">
+              <div class="empty-icon">📭</div>
+              <div class="empty-desc">Todavía no hay recursos recientes. ¡Empieza añadiendo prompts, sitios o recursos!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         IAs
+    ══════════════════════════════════ -->
+    <div class="section-page" id="sec-ias">
+      <div class="sec-header">
+        <div class="sec-header-info">
+          <div class="sec-label">Repositorio · IAs</div>
+          <div class="sec-title">Tabla Comparativa de IAs</div>
+          <div class="sec-desc">47 herramientas evaluadas en 14 criterios · Filtra y busca por categoría</div>
+        </div>
+        <div class="sec-actions">
+          <button class="btn btn-primary" onclick="openAddIAModal()">＋ Añadir IA</button>
+        </div>
+      </div>
+      <!-- Toolbar IAs -->
+      <div class="toolbar" id="ia-toolbar">
+        <div class="toolbar-search">
+          <span>🔍</span>
+          <input type="text" id="iaSearch" placeholder="Buscar IA…" oninput="filterIATable()">
+        </div>
+        <div class="filter-chips" id="ia-cat-chips">
+          <span class="chip active" data-cat="all" onclick="iaFilterCat('all',this)">Todas</span>
+          <span class="chip" data-cat="general"   onclick="iaFilterCat('general',this)">🤖 General</span>
+          <span class="chip" data-cat="math"      onclick="iaFilterCat('math',this)">📐 Mates</span>
+          <span class="chip" data-cat="visual"    onclick="iaFilterCat('visual',this)">🎨 Visual</span>
+          <span class="chip" data-cat="writing"   onclick="iaFilterCat('writing',this)">✍️ Escritura</span>
+          <span class="chip" data-cat="research"  onclick="iaFilterCat('research',this)">🔍 Invest.</span>
+          <span class="chip" data-cat="detect"    onclick="iaFilterCat('detect',this)">🛡️ Detector</span>
+          <span class="chip" data-cat="study"     onclick="iaFilterCat('study',this)">📚 Estudio</span>
+          <span class="chip" data-cat="tool"      onclick="iaFilterCat('tool',this)">🔧 Útil.</span>
+          <span class="chip" data-cat="other"     onclick="iaFilterCat('other',this)">🎮 Otros</span>
+        </div>
+        <span class="toolbar-count" id="ia-count">47 herramientas</span>
+      </div>
+      <div class="ai-table-scroll">
+        <table class="ai-table" id="aiTable">
+          <thead>
+            <tr>
+              <th><span class="ci">🛠</span>HERRAMIENTA</th>
+              <th><span class="ci">🎯</span>MEJOR PARA</th>
+              <th><span class="ci">⭐</span>CALIDAD</th>
+              <th><span class="ci">🎯</span>PRECISIÓN</th>
+              <th><span class="ci">🖱</span>FACILIDAD</th>
+              <th><span class="ci">⚡</span>VELOCIDAD</th>
+              <th><span class="ci">🧠</span>INSTRUCCIONES</th>
+              <th><span class="ci">💡</span>CREATIVIDAD</th>
+              <th><span class="ci">📦</span>MULTIMODAL</th>
+              <th><span class="ci">🎓</span>ACADÉMICO</th>
+              <th><span class="ci">💻</span>CÓDIGO/TECH</th>
+              <th><span class="ci">💰</span>COSTO</th>
+              <th><span class="ci">🔒</span>PRIVACIDAD</th>
+              <th><span class="ci">🌐</span>IDIOMAS</th>
+              <th><span class="ci">📱</span>DISPONIBILIDAD</th>
+              <th><span class="ci">⚙️</span>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="aiTableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         PROMPTS
+    ══════════════════════════════════ -->
+    <div class="section-page" id="sec-prompts">
+      <div class="sec-header">
+        <div class="sec-header-info">
+          <div class="sec-label">Repositorio · Prompts</div>
+          <div class="sec-title">Biblioteca de Prompts</div>
+          <div class="sec-desc">Guarda y organiza tus prompts más útiles con etiquetas y categorías</div>
+        </div>
+        <div class="sec-actions">
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="setView('prompts','grid',this)">⊞</button>
+            <button class="view-btn" onclick="setView('prompts','list',this)">☰</button>
+          </div>
+          <button class="btn btn-primary" onclick="openPromptModal()">＋ Nuevo Prompt</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-search">
+          <span>🔍</span>
+          <input type="text" id="promptSearch" placeholder="Buscar prompts…" oninput="filterSection('prompts')">
+        </div>
+        <div class="filter-chips" id="prompt-chips">
+          <span class="chip active" data-filter="all" onclick="setSectionFilter('prompts','all',this)">Todos</span>
+        </div>
+        <span class="toolbar-count" id="prompts-count">0 prompts</span>
+      </div>
+      <div class="scroll-area">
+        <div id="prompts-container" class="cards-grid"></div>
+        <div id="prompts-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">✨</div>
+          <div class="empty-title">Sin prompts todavía</div>
+          <div class="empty-desc">Guarda tus prompts favoritos para reutilizarlos fácilmente en cualquier IA.</div>
+          <button class="btn btn-primary" onclick="openPromptModal()" style="margin-top:8px">Añadir primer prompt</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         SITIOS WEB
+    ══════════════════════════════════ -->
+    <div class="section-page" id="sec-sitios">
+      <div class="sec-header">
+        <div class="sec-header-info">
+          <div class="sec-label">Repositorio · Sitios Web</div>
+          <div class="sec-title">Marcadores Inteligentes</div>
+          <div class="sec-desc">Organiza URLs, herramientas web y recursos en línea con descripción y etiquetas</div>
+        </div>
+        <div class="sec-actions">
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="setView('sitios','grid',this)">⊞</button>
+            <button class="view-btn" onclick="setView('sitios','list',this)">☰</button>
+          </div>
+          <button class="btn btn-primary" onclick="openSiteModal()">＋ Añadir Sitio</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-search">
+          <span>🔍</span>
+          <input type="text" id="sitioSearch" placeholder="Buscar sitios…" oninput="filterSection('sitios')">
+        </div>
+        <div class="filter-chips" id="sitio-chips">
+          <span class="chip active" data-filter="all" onclick="setSectionFilter('sitios','all',this)">Todos</span>
+        </div>
+        <span class="toolbar-count" id="sitios-count">0 sitios</span>
+      </div>
+      <div class="scroll-area">
+        <div id="sitios-container" class="cards-grid"></div>
+        <div id="sitios-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">🌐</div>
+          <div class="empty-title">Sin sitios todavía</div>
+          <div class="empty-desc">Guarda URLs de herramientas, referencias y recursos que usas frecuentemente.</div>
+          <button class="btn btn-primary" onclick="openSiteModal()" style="margin-top:8px">Añadir primer sitio</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         OTROS RECURSOS
+    ══════════════════════════════════ -->
+    <div class="section-page" id="sec-otros">
+      <div class="sec-header">
+        <div class="sec-header-info">
+          <div class="sec-label">Repositorio · Varios</div>
+          <div class="sec-title">Otros Recursos</div>
+          <div class="sec-desc">Archivos, notas, referencias, comandos, snippets y cualquier recurso digital que no encaje en otra categoría</div>
+        </div>
+        <div class="sec-actions">
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="setView('otros','grid',this)">⊞</button>
+            <button class="view-btn" onclick="setView('otros','list',this)">☰</button>
+          </div>
+          <button class="btn btn-primary" onclick="openOtroModal()">＋ Añadir Recurso</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-search">
+          <span>🔍</span>
+          <input type="text" id="otroSearch" placeholder="Buscar recursos…" oninput="filterSection('otros')">
+        </div>
+        <div class="filter-chips" id="otro-chips">
+          <span class="chip active" data-filter="all" onclick="setSectionFilter('otros','all',this)">Todos</span>
+        </div>
+        <span class="toolbar-count" id="otros-count">0 recursos</span>
+      </div>
+      <div class="scroll-area">
+        <div id="otros-container" class="cards-grid"></div>
+        <div id="otros-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">📂</div>
+          <div class="empty-title">Sin recursos todavía</div>
+          <div class="empty-desc">Guarda notas, snippets de código, referencias, comandos o cualquier recurso que necesites.</div>
+          <button class="btn btn-primary" onclick="openOtroModal()" style="margin-top:8px">Añadir primer recurso</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         SETTINGS / IO
+    ══════════════════════════════════ -->
+    <div class="section-page" id="sec-settings">
+      <div class="sec-header">
+        <div class="sec-header-info">
+          <div class="sec-label">Configuración</div>
+          <div class="sec-title">Datos e Importación</div>
+          <div class="sec-desc">Exporta, importa o limpia todos los datos del repositorio</div>
+        </div>
+      </div>
+      <div class="scroll-area">
+        <div style="max-width:560px; display:flex; flex-direction:column; gap:20px;">
+          <!-- Export -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-emoji">📤</div>
+              <div class="card-info">
+                <div class="card-name">Exportar datos</div>
+                <div class="card-sub">Descarga todos tus recursos como JSON</div>
+              </div>
+            </div>
+            <div class="card-body">Exporta todos tus prompts, sitios web y otros recursos a un archivo JSON para hacer una copia de seguridad o transferirlos a otro dispositivo.</div>
+            <div>
+              <button class="btn btn-primary" onclick="exportData()">📤 Exportar JSON</button>
+            </div>
+          </div>
+          <!-- Import -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-emoji">📥</div>
+              <div class="card-info">
+                <div class="card-name">Importar datos</div>
+                <div class="card-sub">Carga un archivo JSON exportado anteriormente</div>
+              </div>
+            </div>
+            <div class="card-body">Importa recursos desde un archivo JSON. Los datos existentes se mantendrán y los nuevos se agregarán.</div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">📁 Seleccionar archivo</button>
+              <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+            </div>
+          </div>
+          <!-- Storage info -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-emoji">💾</div>
+              <div class="card-info">
+                <div class="card-name">Almacenamiento local</div>
+                <div class="card-sub">Los datos se guardan en tu navegador (localStorage)</div>
+              </div>
+            </div>
+            <div id="storage-info" class="card-body" style="font-family:'DM Mono',monospace;font-size:11px;line-height:2;">Cargando…</div>
+          </div>
+          <!-- Danger zone -->
+          <div class="card" style="border-color:rgba(252,129,129,0.2);">
+            <div class="card-header">
+              <div class="card-emoji">⚠️</div>
+              <div class="card-info">
+                <div class="card-name" style="color:var(--red)">Zona peligrosa</div>
+                <div class="card-sub">Acción irreversible</div>
+              </div>
+            </div>
+            <div class="card-body">Eliminar todos los datos guardados en el repositorio. Esta acción no se puede deshacer. La tabla de IAs predeterminada no se verá afectada.</div>
+            <div>
+              <button class="btn btn-danger" onclick="clearAllConfirm()">🗑️ Limpiar todos los datos</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- /main -->
+</div><!-- /app-body -->
+
+<!-- ═══════════════ TOAST CONTAINER ═══════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════ -->
+
+<!-- ── ADD / EDIT IA ── -->
+<div class="modal-overlay" id="modal-ia">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-ia-title">Añadir IA</div>
+      <button class="modal-close" onclick="closeModal('modal-ia')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ia-edit-id">
+      <div class="field-row">
+        <div class="field">
+          <label>Nombre <span>*</span></label>
+          <input type="text" id="ia-name" placeholder="ej. ChatGPT">
+        </div>
+        <div class="field">
+          <label>URL <span>*</span></label>
+          <input type="text" id="ia-url" placeholder="https://…">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Categoría <span>*</span></label>
+          <select id="ia-cat">
+            <option value="general">🤖 IA General</option>
+            <option value="math">📐 Matemáticas</option>
+            <option value="visual">🎨 Creación Visual</option>
+            <option value="writing">✍️ Escritura</option>
+            <option value="research">🔍 Investigación</option>
+            <option value="detect">🛡️ Detector IA</option>
+            <option value="study">📚 Estudio</option>
+            <option value="tool">🔧 Utilidades</option>
+            <option value="other">🎮 Otros</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Costo</label>
+          <select id="ia-cost-type">
+            <option value="free">Gratis</option>
+            <option value="freemium">Freemium</option>
+            <option value="paid">De Pago</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Mejor para (uso principal) <span>*</span></label>
+        <input type="text" id="ia-uso" placeholder="ej. Escritura creativa, código, análisis de datos…">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Calidad</label>
+          <select id="ia-calidad">
+            <option value="exc">Excelente</option><option value="good">Buena</option><option value="reg">Regular</option><option value="bad">Mala</option><option value="na">N/A</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Precisión</label>
+          <select id="ia-precision">
+            <option value="hi">Alta</option><option value="med">Media</option><option value="low">Baja</option><option value="na">N/A</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Facilidad de uso</label>
+          <select id="ia-facilidad">
+            <option value="exc">Excelente</option><option value="good">Buena</option><option value="reg">Regular</option><option value="bad">Mala</option><option value="na">N/A</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Velocidad</label>
+          <select id="ia-velocidad">
+            <option value="exc">Excelente</option><option value="good">Buena</option><option value="reg">Regular</option><option value="bad">Mala</option><option value="na">N/A</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Creatividad</label>
+          <select id="ia-creatividad">
+            <option value="exc">Excelente</option><option value="good">Buena</option><option value="reg">Regular</option><option value="bad">Mala</option><option value="na">N/A</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Privacidad</label>
+          <select id="ia-privacidad">
+            <option value="hi">Alta</option><option value="med">Media</option><option value="low">Baja</option><option value="na">N/A</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Capacidades multimodales (separadas por coma)</label>
+        <input type="text" id="ia-multi" placeholder="ej. Texto, Imágenes, PDF, Código">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Idiomas</label>
+          <input type="text" id="ia-idiomas" placeholder="ES ✓✓✓ / EN ✓✓✓">
+        </div>
+        <div class="field">
+          <label>Disponibilidad</label>
+          <input type="text" id="ia-disponib" placeholder="ej. Web, iOS, Android">
+        </div>
+      </div>
+      <div class="field">
+        <label>Costo / Detalles del plan</label>
+        <input type="text" id="ia-cost-detail" placeholder="ej. Pro: $20/mes. Gratis: 20 msgs/día">
+      </div>
+      <div class="field">
+        <label>Notas adicionales</label>
+        <textarea id="ia-notas" placeholder="Notas, advertencias, casos de uso específicos…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-ia')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveIA()">Guardar IA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD / EDIT PROMPT ── -->
+<div class="modal-overlay" id="modal-prompt">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-prompt-title">Nuevo Prompt</div>
+      <button class="modal-close" onclick="closeModal('modal-prompt')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="prompt-edit-id">
+      <div class="field">
+        <label>Nombre / Título <span>*</span></label>
+        <input type="text" id="prompt-name" placeholder="ej. Redactar email formal de seguimiento">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Categoría / Etiqueta principal</label>
+          <input type="text" id="prompt-cat" placeholder="ej. Escritura, Código, SEO, Estudio…">
+        </div>
+        <div class="field">
+          <label>IA objetivo</label>
+          <input type="text" id="prompt-ia" placeholder="ej. ChatGPT, Claude, Perplexity…">
+        </div>
+      </div>
+      <div class="field">
+        <label>Contenido del prompt <span>*</span></label>
+        <textarea id="prompt-content" style="min-height:140px;font-family:'DM Mono',monospace;font-size:12px;" placeholder="Escribe aquí el prompt completo…"></textarea>
+      </div>
+      <div class="field">
+        <label>Descripción / Para qué sirve</label>
+        <textarea id="prompt-desc" style="min-height:60px;" placeholder="Breve descripción de cuándo y cómo usarlo…"></textarea>
+      </div>
+      <div class="field">
+        <label>Tags adicionales (separados por coma)</label>
+        <input type="text" id="prompt-tags" placeholder="ej. productividad, creatividad, académico">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-prompt')">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePrompt()">Guardar Prompt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD / EDIT SITE ── -->
+<div class="modal-overlay" id="modal-site">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-site-title">Añadir Sitio</div>
+      <button class="modal-close" onclick="closeModal('modal-site')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="site-edit-id">
+      <div class="field">
+        <label>Nombre del sitio <span>*</span></label>
+        <input type="text" id="site-name" placeholder="ej. Notion, Canva, GitHub…">
+      </div>
+      <div class="field">
+        <label>URL <span>*</span></label>
+        <input type="url" id="site-url" placeholder="https://…">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Categoría</label>
+          <input type="text" id="site-cat" placeholder="ej. Diseño, Productividad, Dev…">
+        </div>
+        <div class="field">
+          <label>Emoji / Icono</label>
+          <input type="text" id="site-emoji" placeholder="ej. 🎨" maxlength="4">
+        </div>
+      </div>
+      <div class="field">
+        <label>Descripción</label>
+        <textarea id="site-desc" placeholder="¿Para qué usas este sitio?…"></textarea>
+      </div>
+      <div class="field">
+        <label>Tags (separadas por coma)</label>
+        <input type="text" id="site-tags" placeholder="ej. gratuito, diseño, colaboración">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-site')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSite()">Guardar Sitio</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD / EDIT OTRO ── -->
+<div class="modal-overlay" id="modal-otro">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-otro-title">Añadir Recurso</div>
+      <button class="modal-close" onclick="closeModal('modal-otro')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="otro-edit-id">
+      <div class="field-row">
+        <div class="field">
+          <label>Nombre <span>*</span></label>
+          <input type="text" id="otro-name" placeholder="Nombre del recurso">
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select id="otro-type">
+            <option value="nota">📝 Nota</option>
+            <option value="codigo">💻 Snippet de código</option>
+            <option value="comando">⌨️ Comando / CLI</option>
+            <option value="referencia">📖 Referencia</option>
+            <option value="archivo">📁 Archivo / Ruta</option>
+            <option value="otro">🔷 Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Categoría</label>
+        <input type="text" id="otro-cat" placeholder="ej. Dev, Estudios, Personal…">
+      </div>
+      <div class="field">
+        <label>Contenido <span>*</span></label>
+        <textarea id="otro-content" style="min-height:120px;font-family:'DM Mono',monospace;font-size:12px;" placeholder="Contenido del recurso…"></textarea>
+      </div>
+      <div class="field">
+        <label>Descripción / Notas</label>
+        <textarea id="otro-desc" placeholder="¿Para qué sirve? ¿Cuándo usarlo?…"></textarea>
+      </div>
+      <div class="field">
+        <label>Tags (separadas por coma)</label>
+        <input type="text" id="otro-tags" placeholder="ej. python, terminal, útil">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-otro')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveOtro()">Guardar Recurso</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── QUICK ADD ── -->
+<div class="modal-overlay" id="modal-quickadd">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">¿Qué quieres añadir?</div>
+      <button class="modal-close" onclick="closeModal('modal-quickadd')">✕</button>
+    </div>
+    <div class="modal-body" style="gap:10px">
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start;gap:12px;padding:14px 16px;" onclick="closeModal('modal-quickadd');openAddIAModal()">🤖 <span><strong>Nueva IA</strong> — Herramienta de inteligencia artificial</span></button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start;gap:12px;padding:14px 16px;" onclick="closeModal('modal-quickadd');openPromptModal()">✨ <span><strong>Nuevo Prompt</strong> — Guardar un prompt reutilizable</span></button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start;gap:12px;padding:14px 16px;" onclick="closeModal('modal-quickadd');openSiteModal()">🌐 <span><strong>Nuevo Sitio</strong> — Marcar una URL o recurso web</span></button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:flex-start;gap:12px;padding:14px 16px;" onclick="closeModal('modal-quickadd');openOtroModal()">📂 <span><strong>Otro Recurso</strong> — Nota, snippet, comando o referencia</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ── IMPORT/EXPORT ── -->
+<div class="modal-overlay" id="modal-io">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Importar / Exportar</div>
+      <button class="modal-close" onclick="closeModal('modal-io')">✕</button>
+    </div>
+    <div class="modal-body" style="gap:12px">
+      <p style="font-size:13px;color:var(--text2);line-height:1.6;">Exporta todos tus datos o importa desde un respaldo JSON.</p>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="exportData();closeModal('modal-io')">📤 Exportar datos como JSON</button>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;" onclick="document.getElementById('importFile').click();closeModal('modal-io')">📥 Importar desde JSON</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM ── -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="confirm-modal">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirm-title">¿Estás seguro?</div>
+    <div class="confirm-desc" id="confirm-desc">Esta acción no se puede deshacer.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok-btn" onclick="">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── VIEW PROMPT ── -->
+<div class="modal-overlay" id="modal-view-prompt">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <div class="modal-title" id="view-prompt-title">Ver Prompt</div>
+      <button class="modal-close" onclick="closeModal('modal-view-prompt')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.8;color:var(--text2);white-space:pre-wrap;word-break:break-word;" id="view-prompt-content"></div>
+      <div id="view-prompt-meta" style="font-size:12px;color:var(--text3);display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="view-prompt-copy" onclick="">📋 Copiar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-view-prompt')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA STORE
+═══════════════════════════════════════════════════════════ */
+const STORAGE_KEYS = {
+  ias:     'rh_ias_custom',
+  prompts: 'rh_prompts',
+  sitios:  'rh_sitios',
+  otros:   'rh_otros'
+};
+
+function load(key) {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS[key]) || '[]'); }
+  catch { return []; }
+}
+
+function save(key, arr) {
+  localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(arr));
+  updateCounts();
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION NAVIGATION
+═══════════════════════════════════════════════════════════ */
+function switchSection(id, el) {
+  document.querySelectorAll('.section-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = document.getElementById('sec-' + id);
+  if (sec) sec.classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'settings') renderStorageInfo();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COUNTS
+═══════════════════════════════════════════════════════════ */
+function updateCounts() {
+  const customIAs = load('ias');
+  const totalIAs = IA_DATA.length + customIAs.length;
+  const prompts   = load('prompts').length;
+  const sites     = load('sitios').length;
+  const otros     = load('otros').length;
+
+  document.getElementById('tb-ia').textContent = totalIAs;
+  document.getElementById('tb-prompts').textContent = prompts;
+  document.getElementById('tb-sites').textContent = sites;
+  document.getElementById('tb-otros').textContent = otros;
+
+  document.getElementById('nb-ia').textContent = totalIAs;
+  document.getElementById('nb-prompts').textContent = prompts;
+  document.getElementById('nb-sites').textContent = sites;
+  document.getElementById('nb-otros').textContent = otros;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════════════════ */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ESC key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(o => o.classList.remove('open'));
+  }
+});
+
+function showConfirm(icon, title, desc, fn) {
+  document.getElementById('confirm-icon').textContent = icon;
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-desc').textContent = desc;
+  document.getElementById('confirm-ok-btn').onclick = () => { fn(); closeModal('modal-confirm'); };
+  openModal('modal-confirm');
+}
+
+function quickAdd() { openModal('modal-quickadd'); }
+function openImportExport() { openModal('modal-io'); }
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+function toast(msg, type = 'success', dur = 3000) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(20px)'; t.style.transition = 'all .3s'; setTimeout(() => t.remove(), 300); }, dur);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   IA TABLE DATA
+═══════════════════════════════════════════════════════════ */
+const IA_DATA = [
+  // General
+  { id:'ia-claude',  name:'Claude',         url:'https://claude.ai/new',                   cat:'general',  uso:'Análisis profundo, escritura avanzada, código, razonamiento ético',             calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'good', creatividad:'exc', multi:'Texto, Imágenes, PDF, Código, CSV',            academico:'exc', codigo:'exc', costType:'freemium', cost:'Pro: ~$20/mes. Gratis: limitado', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, iOS, Android, API', notas:'Razona antes de responder; pocos errores', custom:false },
+  { id:'ia-chatgpt', name:'ChatGPT',         url:'https://chatgpt.com',                     cat:'general',  uso:'Todo propósito: redacción, código, búsqueda, imágenes, voz; el más versátil', calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'good', creatividad:'exc', multi:'Texto, Imágenes, Audio, PDF, Código, Voz',    academico:'exc', codigo:'exc', costType:'freemium', cost:'Plus: $20/mes. Gratis: GPT-4o mini', privacidad:'low', idiomas:'ES ✓✓✓ / EN ✓✓✓ / +50', dispon:'Web, iOS, Android, API, Desktop', notas:'Puede alucinar datos numéricos', custom:false },
+  { id:'ia-deepseek',name:'DeepSeek',        url:'https://chat.deepseek.com',               cat:'general',  uso:'Razonamiento matemático, código avanzado, análisis lógico; muy potente y gratis',calidad:'exc', precision:'hi',  facilidad:'good', velocidad:'reg', creatividad:'good', multi:'Texto, Código, PDF',                          academico:'exc', codigo:'exc', costType:'free',     cost:'Completamente gratis; API muy barata', privacidad:'low', idiomas:'ES ✓✓ / EN ✓✓✓ / ZH ✓✓✓', dispon:'Web, iOS, Android, API', notas:'⚠️ Empresa china; datos pueden ser accedidos por gobierno chino', custom:false },
+  { id:'ia-manus',   name:'Manus',           url:'https://manus.im/app',                    cat:'general',  uso:'Agente autónomo: navega web, escribe código, crea reportes sin supervisión',     calidad:'good', precision:'med', facilidad:'reg', velocidad:'reg', creatividad:'good', multi:'Texto, Web, Código, Archivos',               academico:'good', codigo:'good', costType:'freemium', cost:'Créditos gratuitos limitados', privacidad:'med', idiomas:'ES ✓✓ / EN ✓✓✓', dispon:'Web, API', notas:'Empresa china (Monica); mismo contexto de privacidad que DeepSeek', custom:false },
+  { id:'ia-kimi',    name:'Kimi',            url:'https://www.kimi.com',                    cat:'general',  uso:'Contexto muy largo (hasta 1M tokens), análisis de documentos extensos',           calidad:'good', precision:'hi',  facilidad:'good', velocidad:'good', creatividad:'good', multi:'Texto, PDF, Código, Imágenes',               academico:'good', codigo:'good', costType:'free',     cost:'Gratis con límites; Premium disponible', privacidad:'low', idiomas:'ES ✓✓ / EN ✓✓✓ / ZH ✓✓✓', dispon:'Web, iOS, Android', notas:'⚠️ Moonshot AI (China)', custom:false },
+  { id:'ia-astra',   name:'Astra',           url:'https://app.astra-ai.co/es-ES',           cat:'general',  uso:'Asistente multimodal en tiempo real; ver el mundo con cámara y responder',       calidad:'good', precision:'med', facilidad:'good', velocidad:'exc', creatividad:'good', multi:'Texto, Video, Audio, Cámara',                academico:'good', codigo:'reg', costType:'freemium', cost:'Acceso limitado; parte de Google DeepMind', privacidad:'med', idiomas:'ES ✓✓ / EN ✓✓✓', dispon:'Web, iOS, Android', notas:'Respuesta en tiempo real es su ventaja clave', custom:false },
+  { id:'ia-nblm',    name:'NotebookLM',      url:'https://notebooklm.google.com',           cat:'general',  uso:'Analizar documentos propios; notas, podcasts y resúmenes con fuentes',            calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'good', creatividad:'reg', multi:'PDF, Texto, Audio, Slides, URL',             academico:'exc', codigo:'reg', costType:'free',     cost:'Gratis con cuenta Google', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, iOS, Android', notas:'Solo usa TUS documentos; no inventa datos', custom:false },
+  { id:'ia-qwen',    name:'Qwen (Alibaba)',  url:'https://chat.qwen.ai',                    cat:'general',  uso:'Multitareas generales; fuerte en chino e inglés; buena alternativa gratuita',   calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'good', multi:'Texto, Imágenes, Código',                    academico:'good', codigo:'good', costType:'free',     cost:'Gratis; modelos de pago vía API', privacidad:'low', idiomas:'ES ✓✓ / EN ✓✓✓ / ZH ✓✓✓', dispon:'Web, API', notas:'⚠️ Alibaba (China)', custom:false },
+  { id:'ia-blackb',  name:'Blackbox AI',     url:'https://www.blackbox.ai',                 cat:'general',  uso:'Programación, depuración de código; búsqueda técnica integrada en el editor',   calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'reg', multi:'Texto, Código, Búsqueda',                    academico:'reg', codigo:'exc', costType:'freemium', cost:'Gratis con límites; Pro ~$10/mes', privacidad:'med', idiomas:'ES ✓✓ / EN ✓✓✓', dispon:'Web, VS Code, Extensions', notas:'Especializado en autocomplete, debug', custom:false },
+  { id:'ia-felo',    name:'Felo.ai',         url:'https://felo.ai/search',                  cat:'general',  uso:'Búsqueda multilingüe con IA, resúmenes con fuentes, traducción y multitareas',  calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'reg', multi:'Texto, Web, Traducción',                     academico:'good', codigo:'reg', costType:'freemium', cost:'Plan gratis; Pro con más búsquedas', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓ / +30', dispon:'Web, iOS, Android', notas:'', custom:false },
+  // Math
+  { id:'ia-wolfram', name:'WolframAlpha',    url:'https://www.wolframalpha.com',            cat:'math',     uso:'Motor de conocimiento computacional: matemáticas, ciencias, estadística, física', calidad:'exc', precision:'hi',  facilidad:'reg', velocidad:'exc', creatividad:'na', multi:'Texto, Gráficas, Cálculos',                   academico:'exc', codigo:'exc', costType:'freemium', cost:'Pro: ~$7.99/mes. Gratis: sin pasos', privacidad:'hi', idiomas:'EN ✓✓✓ / ES limitado', dispon:'Web, iOS, Android, API', notas:'Motor computacional verificado matemáticamente', custom:false },
+  { id:'ia-symbol',  name:'Symbolab',        url:'https://es.symbolab.com',                 cat:'math',     uso:'Resolver ecuaciones paso a paso: álgebra, cálculo, trigonometría, geometría',    calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'Texto, Gráficas, Cámara',                     academico:'exc', codigo:'exc', costType:'freemium', cost:'Pro: ~$29.99/año. Gratis: pasos limitados', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, iOS, Android', notas:'Referencia #1 para estudiantes de matemáticas', custom:false },
+  { id:'ia-cymath',  name:'Cymath',          url:'https://www.cymath.com/sp/',              cat:'math',     uso:'Resolver álgebra y cálculo básico con pasos; ideal para secundaria/prepa',       calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'Texto',                                       academico:'good', codigo:'reg', costType:'freemium', cost:'Plus: ~$4.99/mes. Gratis: sin pasos', privacidad:'hi', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, iOS, Android', notas:'', custom:false },
+  { id:'ia-theta',   name:'Thetawise',       url:'https://thetawise.ai',                    cat:'math',     uso:'Tutor de matemáticas con IA: explica conceptos, guía paso a paso',              calidad:'good', precision:'med', facilidad:'exc', velocidad:'good', creatividad:'na', multi:'Texto, Imágenes',                             academico:'exc', codigo:'reg', costType:'freemium', cost:'Gratis con límites; Pro disponible', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web, iOS', notas:'Enfocado 100% en aprendizaje matemático', custom:false },
+  { id:'ia-mathos',  name:'MathGPT Pro',     url:'https://www.mathgptpro.com',              cat:'math',     uso:'Matemáticas avanzadas con IA generativa: cálculo, estadística, álgebra lineal', calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'na', multi:'Texto, Imágenes',                             academico:'exc', codigo:'reg', costType:'paid',     cost:'Sin plan gratuito significativo; ~$9.99/mes', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web', notas:'', custom:false },
+  // Visual
+  { id:'ia-gamma',   name:'Gamma',           url:'https://gamma.app',                       cat:'visual',   uso:'Crear presentaciones, documentos y páginas web con IA desde texto o idea',     calidad:'exc', precision:'good', facilidad:'exc', velocidad:'exc', creatividad:'exc', multi:'Texto, Imágenes, PDF',                        academico:'exc', codigo:'na', costType:'freemium', cost:'Gratis: 400 créditos, marca de agua. Plus: $10/mes', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, iOS', notas:'Genera 10+ diapositivas en segundos', custom:false },
+  { id:'ia-magic',   name:'MagicSlides',     url:'https://www.magicslides.app/es',          cat:'visual',   uso:'Generar presentaciones PowerPoint/Google Slides desde texto o URL',            calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'reg', multi:'Texto, URL',                                  academico:'good', codigo:'na', costType:'freemium', cost:'Gratis: 3/mes. Pro: $10/mes', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, Google Slides, PowerPoint', notas:'Diseños predefinidos, menos original que Gamma', custom:false },
+  { id:'ia-napkin',  name:'Napkin',          url:'https://www.napkin.ai',                   cat:'visual',   uso:'Convertir texto en diagramas, mapas conceptuales e infografías automáticamente',calidad:'exc', precision:'good', facilidad:'exc', velocidad:'exc', creatividad:'exc', multi:'Texto, SVG',                                  academico:'exc', codigo:'na', costType:'freemium', cost:'Gratis con límites; Pro: $12/mes', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web', notas:'⭐ Ideal para mapas mentales y exposiciones', custom:false },
+  { id:'ia-ideo',    name:'Ideogram',        url:'https://ideogram.ai/t/explore',           cat:'visual',   uso:'Generar imágenes con texto integrado preciso; carteles, logos, infografías',   calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'good', creatividad:'exc', multi:'Texto→Imagen, Imagen→Imagen',                 academico:'reg', codigo:'na', costType:'freemium', cost:'Gratis: 10 imágenes/día. Basic: $8/mes', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web, iOS, Android', notas:'⭐ Mejor en renderizar texto dentro de imágenes', custom:false },
+  { id:'ia-homebyme',name:'HomeByMe',        url:'https://home.by.me/es/mis-proyectos',     cat:'visual',   uso:'Diseño de interiores en 3D: planear habitaciones, elegir muebles, visualizar',  calidad:'good', precision:'hi',  facilidad:'good', velocidad:'reg', creatividad:'good', multi:'3D, Renders',                                 academico:'reg', codigo:'na', costType:'freemium', cost:'Gratis con proyectos limitados. Premium: ~$14.90/mes', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓ / FR ✓✓✓', dispon:'Web', notas:'No es IA generativa; planificación 3D precisa', custom:false },
+  // Research
+  { id:'ia-perp',    name:'Perplexity',      url:'https://www.perplexity.ai',               cat:'research', uso:'Buscador con IA: respuestas en tiempo real con fuentes citadas; ideal para investigar',calidad:'exc', precision:'hi', facilidad:'exc', velocidad:'exc', creatividad:'reg', multi:'Texto, Imágenes, Web',                       academico:'exc', codigo:'reg', costType:'freemium', cost:'Pro: $20/mes. Gratis: búsquedas limitadas', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web, iOS, Android, API', notas:'⭐ La mejor IA para investigación académica con fuentes', custom:false },
+  { id:'ia-anara',   name:'Anara',           url:'https://anara.com',                       cat:'research', uso:'Investigación con y sin fuentes; resúmenes de artículos académicos y web',       calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'reg', multi:'Texto, Web',                                  academico:'good', codigo:'na', costType:'freemium', cost:'Plan gratis disponible', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web', notas:'', custom:false },
+  { id:'ia-litsol',  name:'LitSolutions',    url:'https://www.litsolutions.org',            cat:'research', uso:'Respuestas a preguntas de libros de texto físicos; soluciones a ejercicios',     calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'na', multi:'Texto',                                       academico:'exc', codigo:'reg', costType:'freemium', cost:'Acceso limitado gratis', privacidad:'med', idiomas:'EN ✓✓✓ / ES parcial', dispon:'Web', notas:'Depende de si el libro está en su base de datos', custom:false },
+  { id:'ia-quicks',  name:'Quicks.ai',       url:'https://quicks.ai/es',                    cat:'research', uso:'Convertir videos de YouTube en notas, resúmenes y puntos clave automáticamente', calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'exc', creatividad:'reg', multi:'Video (YT), Audio',                            academico:'exc', codigo:'na', costType:'freemium', cost:'Gratis con límites. Pro: ~$12/mes', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓ / Multilingual', dispon:'Web, Extensión Chrome', notas:'⭐ Ideal para resumir clases y tutoriales de YouTube', custom:false },
+  // Writing
+  { id:'ia-aithor',  name:'Aithor',          url:'https://aithor.com/es-es/editor',         cat:'writing',  uso:'Generar ensayos académicos completos con estructura, argumentos y referencias',  calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'good', multi:'Texto',                                       academico:'exc', codigo:'na', costType:'freemium', cost:'Gratis muy limitado. Pro: ~$9.99/mes', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓✓', dispon:'Web', notas:'⚠️ Textos guardados en sus servidores', custom:false },
+  { id:'ia-rescrito',name:'Rescrito',        url:'https://rescrito.com',                    cat:'writing',  uso:'Crear y mejorar ensayos en español; herramienta orientada a hispanohablantes',   calidad:'good', precision:'med', facilidad:'exc', velocidad:'good', creatividad:'good', multi:'Texto',                                       academico:'good', codigo:'na', costType:'freemium', cost:'Versión gratis limitada', privacidad:'med', idiomas:'ES ✓✓✓', dispon:'Web', notas:'Pensado para el sistema educativo en español', custom:false },
+  { id:'ia-human',   name:'Humanizer',       url:'https://humanizer.org',                   cat:'writing',  uso:'Reescribir texto generado por IA para que suene natural; evitar detección',      calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'reg', multi:'Texto',                                       academico:'reg', codigo:'na', costType:'freemium', cost:'Palabras gratis limitadas; Premium disponible', privacidad:'low', idiomas:'ES ✓✓ / EN ✓✓✓', dispon:'Web', notas:'⚠️ Usar éticamente; verificar política de tu institución', custom:false },
+  { id:'ia-rewrite', name:'Rewritify',       url:'https://rewritify.ai',                    cat:'writing',  uso:'Parafrasear textos con IA para evitar plagio y mejorar redacción',              calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'reg', multi:'Texto',                                       academico:'good', codigo:'na', costType:'freemium', cost:'Freemium', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web', notas:'', custom:false },
+  { id:'ia-mystylus',name:'MyStyluS',        url:'https://mystylus.ai',                     cat:'writing',  uso:'Escritura académica asistida: ensayos, tesis, análisis literarios con guía',      calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'good', multi:'Texto',                                       academico:'exc', codigo:'na', costType:'freemium', cost:'Plan gratis disponible', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web', notas:'Guía el proceso de escritura paso a paso', custom:false },
+  // Detection
+  { id:'ia-gptz',    name:'GPTZero',         url:'https://gptzero.me',                      cat:'detect',   uso:'Detectar si un texto fue escrito por IA; para maestros y evaluadores',          calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'Texto, PDF, Word',                            academico:'exc', codigo:'na', costType:'freemium', cost:'Gratis con límites. Edu/Pro: desde $10/mes', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web, API, LMS', notas:'⭐ Da % de probabilidad por párrafo', custom:false },
+  { id:'ia-quillb',  name:'QuillBot Detector',url:'https://quillbot.com/ai-content-detector',cat:'detect',  uso:'Detectar IA en textos Y parafrasear; suite completa para escritura',            calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'good', multi:'Texto',                                       academico:'good', codigo:'na', costType:'freemium', cost:'Gratis con límites. Premium: $9.95/mes', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web, Extensión Chrome, Word', notas:'', custom:false },
+  { id:'ia-ppalp',   name:'Paperpal',        url:'https://edit.paperpal.com',               cat:'detect',   uso:'Detección IA + revisión académica; orientado a investigadores y tesis',         calidad:'good', precision:'hi',  facilidad:'good', velocidad:'good', creatividad:'na', multi:'Texto, Word',                                 academico:'exc', codigo:'na', costType:'freemium', cost:'Gratis con límites. Prime: ~$25/mes', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web, Word, Overleaf', notas:'Especializado en papers y tesis', custom:false },
+  // Study
+  { id:'ia-oreate',  name:'OreateAI',        url:'https://www.oreateai.com',                cat:'study',    uso:'Suite académica multitarea: ensayos, resúmenes, flashcards, planes de estudio',   calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'reg', multi:'Texto',                                       academico:'exc', codigo:'na', costType:'freemium', cost:'Plan gratis limitado', privacidad:'med', idiomas:'ES ✓✓✓ / EN ✓✓', dispon:'Web', notas:'Todo lo necesario para el estudiante hispanohablante', custom:false },
+  { id:'ia-youlearn',name:'YouLearn',        url:'https://youlearn.ai',                     cat:'study',    uso:'Aprender de cualquier contenido: sube PDF, video o URL y genera quizzes',        calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'good', creatividad:'reg', multi:'PDF, Video, URL, Texto',                      academico:'exc', codigo:'na', costType:'freemium', cost:'Plan gratis; Pro para más documentos', privacidad:'med', idiomas:'EN ✓✓✓ / ES ✓✓', dispon:'Web, iOS', notas:'⭐ Uno de los mejores para preparar exámenes', custom:false },
+  // Tools
+  { id:'ia-stirling',name:'Stirling PDF',    url:'https://stirlingpdf.io',                  cat:'tool',     uso:'Editar, combinar, dividir, comprimir, convertir y proteger PDFs; suite completa', calidad:'exc', precision:'hi',  facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'PDF, Imágenes, Office',                       academico:'exc', codigo:'na', costType:'free',     cost:'100% gratuito y open source; autoalojable', privacidad:'hi', idiomas:'ES ✓✓✓ / EN ✓✓✓ / Multilingüe', dispon:'Web, Self-hosted, Docker', notas:'⭐ Open source; máxima privacidad si se autoaloja', custom:false },
+  { id:'ia-phet',    name:'PhET Colorado',   url:'https://phet.colorado.edu',               cat:'tool',     uso:'Simulaciones interactivas de física, química, matemáticas y biología para aprender',calidad:'exc', precision:'hi', facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'Simulaciones, Animaciones',                   academico:'exc', codigo:'na', costType:'free',     cost:'100% gratuito; Universidad de Colorado', privacidad:'hi', idiomas:'ES ✓✓✓ / EN ✓✓✓ / +30', dispon:'Web, Offline (App)', notas:'⭐ Referencia mundial para STEM visual', custom:false },
+  { id:'ia-minimax', name:'MiniMaxi',        url:'https://www.minimaxi.com',                cat:'tool',     uso:'Plataforma china de IA multimodal: texto, video, audio e imagen en un solo lugar',calidad:'good', precision:'med', facilidad:'good', velocidad:'good', creatividad:'good', multi:'Texto, Video, Audio, Imagen',                 academico:'reg', codigo:'reg', costType:'freemium', cost:'Freemium', privacidad:'low', idiomas:'ZH ✓✓✓ / EN ✓✓ / ES limitado', dispon:'Web, API', notas:'⚠️ Empresa china; consideraciones de privacidad aplican', custom:false },
+  // Other
+  { id:'ia-humbench',name:'Human Benchmark', url:'https://humanbenchmark.com',              cat:'other',    uso:'Medir y entrenar reflejos, memoria, velocidad de reacción y habilidades cognitivas',calidad:'good', precision:'hi', facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'Web interactivo',                             academico:'reg', codigo:'na', costType:'free',     cost:'Completamente gratuito', privacidad:'hi', idiomas:'EN ✓✓✓', dispon:'Web', notas:'No es IA; plataforma de juegos de entrenamiento cognitivo', custom:false },
+  { id:'ia-airconsole',name:'AirConsole',    url:'https://www.airconsole.com',              cat:'other',    uso:'Jugar videojuegos multijugador desde el navegador usando el celular como control',calidad:'good', precision:'hi', facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'Juegos, Móvil como control',                  academico:'na', codigo:'na', costType:'freemium', cost:'Muchos juegos gratis; premium para más contenido', privacidad:'med', idiomas:'ES ✓✓ / EN ✓✓✓ / Multilingüe', dispon:'Web, TV, Chromecast', notas:'', custom:false },
+  { id:'ia-cheat',   name:'Cheatography',   url:'https://cheatography.com',                cat:'other',    uso:'Repositorio de cheat sheets (resúmenes de referencia rápida) de cualquier tema', calidad:'good', precision:'med', facilidad:'exc', velocidad:'exc', creatividad:'na', multi:'PDF, Texto',                                  academico:'good', codigo:'reg', costType:'free',     cost:'Descarga gratuita con registro', privacidad:'med', idiomas:'EN ✓✓✓ / ES limitado', dispon:'Web', notas:'Contenido creado por usuarios; calidad varía', custom:false },
+];
+
+const R_LABELS = { exc:'Excelente', good:'Buena', reg:'Regular', bad:'Mala', na:'N/A', hi:'Alta', med:'Media', low:'Baja' };
+const R_CLASS  = { exc:'r-exc', good:'r-good', reg:'r-reg', bad:'r-bad', na:'r-na', hi:'r-hi', med:'r-med', low:'r-low' };
+const CAT_LABEL = { general:'🤖 IA General', math:'📐 Matemáticas', visual:'🎨 Creación Visual', writing:'✍️ Escritura', research:'🔍 Investigación', detect:'🛡️ Detector IA', study:'📚 Estudio', tool:'🔧 Utilidades', other:'🎮 Otros' };
+const COST_CLASS = { free:'cp-free', freemium:'cp-frem', paid:'cp-paid' };
+const COST_LABEL = { free:'Gratis', freemium:'Freemium', paid:'De Pago' };
+
+function rBadge(code) {
+  if (!code || code === 'na') return '<span class="r r-na">N/A</span>';
+  return `<span class="r ${R_CLASS[code]}">${R_LABELS[code]||code}</span>`;
+}
+
+function renderIATable(data) {
+  const tbody = document.getElementById('aiTableBody');
+  tbody.innerHTML = '';
+  data.forEach(ia => {
+    const multiTags = (ia.multi||'').split(',').map(t => `<span class="ai-tag">${t.trim()}</span>`).join('');
+    const deletable = ia.custom ? `<button class="btn btn-xs btn-danger" onclick="deleteIA('${ia.id}')">🗑</button>` : '';
+    const tr = document.createElement('tr');
+    tr.dataset.cat = ia.cat;
+    tr.dataset.id = ia.id;
+    tr.innerHTML = `
+      <td>
+        <div class="tool-cell">
+          <a class="tool-link" href="${ia.url}" target="_blank">${ia.name} <span class="ext">↗</span></a>
+          <span class="cat-badge cat-${ia.cat}">${CAT_LABEL[ia.cat]||ia.cat}</span>
+        </div>
+      </td>
+      <td>${ia.uso}</td>
+      <td>${rBadge(ia.calidad)}</td>
+      <td>${rBadge(ia.precision)}</td>
+      <td>${rBadge(ia.facilidad)}</td>
+      <td>${rBadge(ia.velocidad)}</td>
+      <td>${rBadge(ia.facilidad)}</td>
+      <td>${rBadge(ia.creatividad)}</td>
+      <td><div class="ai-tags">${multiTags}</div></td>
+      <td>${rBadge(ia.academico)}</td>
+      <td>${rBadge(ia.codigo)}</td>
+      <td>
+        <span class="cost-pill ${COST_CLASS[ia.costType]||'cp-frem'}">${COST_LABEL[ia.costType]||ia.costType}</span>
+        ${ia.cost ? `<div class="ai-note">${ia.cost}</div>` : ''}
+      </td>
+      <td>${rBadge(ia.privacidad)}</td>
+      <td>${ia.idiomas||''}</td>
+      <td>${ia.dispon||''}</td>
+      <td style="white-space:nowrap">
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-xs btn-ghost" onclick="editIA('${ia.id}')">✏️</button>
+          ${deletable}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  const count = data.length;
+  document.getElementById('ia-count').textContent = count + ' herramient' + (count !== 1 ? 'as' : 'a');
+}
+
+let iaCatFilter = 'all';
+
+function getAllIAs() {
+  return [...IA_DATA, ...load('ias')];
+}
+
+function renderAllIAs() {
+  renderIATable(getAllIAs());
+  updateCounts();
+}
+
+function iaFilterCat(cat, el) {
+  iaCatFilter = cat;
+  document.querySelectorAll('#ia-cat-chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterIATable();
+}
+
+function filterIATable() {
+  const q = document.getElementById('iaSearch').value.toLowerCase();
+  const rows = document.querySelectorAll('#aiTableBody tr');
+  let visible = 0;
+  rows.forEach(row => {
+    const catOk = iaCatFilter === 'all' || row.dataset.cat === iaCatFilter;
+    const txtOk = !q || row.textContent.toLowerCase().includes(q);
+    if (catOk && txtOk) { row.classList.remove('row-hidden'); visible++; }
+    else row.classList.add('row-hidden');
+  });
+  document.getElementById('ia-count').textContent = visible + ' herramient' + (visible !== 1 ? 'as' : 'a');
+}
+
+/* ── IA CRUD ── */
+function openAddIAModal(prefill) {
+  document.getElementById('modal-ia-title').textContent = 'Añadir IA';
+  document.getElementById('ia-edit-id').value = '';
+  ['ia-name','ia-url','ia-uso','ia-multi','ia-idiomas','ia-disponib','ia-cost-detail','ia-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ia-cat').value = 'general';
+  document.getElementById('ia-cost-type').value = 'freemium';
+  document.getElementById('ia-calidad').value = 'good';
+  document.getElementById('ia-precision').value = 'med';
+  document.getElementById('ia-facilidad').value = 'good';
+  document.getElementById('ia-velocidad').value = 'good';
+  document.getElementById('ia-creatividad').value = 'good';
+  document.getElementById('ia-privacidad').value = 'med';
+  if (prefill) { for (const [k,v] of Object.entries(prefill)) { const el = document.getElementById(k); if (el) el.value = v; } }
+  openModal('modal-ia');
+}
+
+function editIA(id) {
+  const all = getAllIAs();
+  const ia = all.find(i => i.id === id);
+  if (!ia) return;
+  document.getElementById('modal-ia-title').textContent = 'Editar IA';
+  document.getElementById('ia-edit-id').value = ia.id;
+  document.getElementById('ia-name').value = ia.name||'';
+  document.getElementById('ia-url').value = ia.url||'';
+  document.getElementById('ia-cat').value = ia.cat||'general';
+  document.getElementById('ia-cost-type').value = ia.costType||'freemium';
+  document.getElementById('ia-uso').value = ia.uso||'';
+  document.getElementById('ia-calidad').value = ia.calidad||'good';
+  document.getElementById('ia-precision').value = ia.precision||'med';
+  document.getElementById('ia-facilidad').value = ia.facilidad||'good';
+  document.getElementById('ia-velocidad').value = ia.velocidad||'good';
+  document.getElementById('ia-creatividad').value = ia.creatividad||'good';
+  document.getElementById('ia-privacidad').value = ia.privacidad||'med';
+  document.getElementById('ia-multi').value = ia.multi||'';
+  document.getElementById('ia-idiomas').value = ia.idiomas||'';
+  document.getElementById('ia-disponib').value = ia.dispon||'';
+  document.getElementById('ia-cost-detail').value = ia.cost||'';
+  document.getElementById('ia-notas').value = ia.notas||'';
+  openModal('modal-ia');
+}
+
+function saveIA() {
+  const name = document.getElementById('ia-name').value.trim();
+  const url  = document.getElementById('ia-url').value.trim();
+  const uso  = document.getElementById('ia-uso').value.trim();
+  if (!name || !uso) { toast('Nombre y uso principal son obligatorios', 'error'); return; }
+  const editId = document.getElementById('ia-edit-id').value;
+  const obj = {
+    id: editId || 'ia-custom-' + uid(),
+    name, url, uso,
+    cat: document.getElementById('ia-cat').value,
+    calidad: document.getElementById('ia-calidad').value,
+    precision: document.getElementById('ia-precision').value,
+    facilidad: document.getElementById('ia-facilidad').value,
+    velocidad: document.getElementById('ia-velocidad').value,
+    creatividad: document.getElementById('ia-creatividad').value,
+    multi: document.getElementById('ia-multi').value.trim(),
+    academico: 'good', codigo: 'good',
+    costType: document.getElementById('ia-cost-type').value,
+    cost: document.getElementById('ia-cost-detail').value.trim(),
+    privacidad: document.getElementById('ia-privacidad').value,
+    idiomas: document.getElementById('ia-idiomas').value.trim(),
+    dispon: document.getElementById('ia-disponib').value.trim(),
+    notas: document.getElementById('ia-notas').value.trim(),
+    custom: true,
+    createdAt: editId ? undefined : Date.now()
+  };
+
+  // Check if editing a default IA
+  const isDefault = IA_DATA.some(i => i.id === editId);
+  const customs = load('ias');
+
+  if (editId) {
+    if (isDefault) {
+      // Store override in custom
+      const idx = customs.findIndex(i => i.id === editId);
+      if (idx >= 0) customs[idx] = obj; else customs.push(obj);
+      save('ias', customs);
+    } else {
+      const idx = customs.findIndex(i => i.id === editId);
+      if (idx >= 0) customs[idx] = obj;
+      save('ias', customs);
+    }
+    toast(`IA "${name}" actualizada`, 'success');
+  } else {
+    customs.push(obj);
+    save('ias', customs);
+    addToRecent({ type:'ia', name, icon:'🤖', createdAt: Date.now() });
+    toast(`IA "${name}" añadida`, 'success');
+  }
+  closeModal('modal-ia');
+  renderAllIAs();
+}
+
+function deleteIA(id) {
+  showConfirm('🗑️', 'Eliminar IA', '¿Seguro que quieres eliminar esta IA del repositorio?', () => {
+    const customs = load('ias').filter(i => i.id !== id);
+    save('ias', customs);
+    renderAllIAs();
+    toast('IA eliminada', 'info');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROMPTS CRUD
+═══════════════════════════════════════════════════════════ */
+let sectionViews = { prompts:'grid', sitios:'grid', otros:'grid' };
+let sectionFilters = { prompts:'all', sitios:'all', otros:'all' };
+
+function setView(section, view, btn) {
+  sectionViews[section] = view;
+  btn.closest('.view-toggle').querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSection(section);
+}
+
+function setSectionFilter(section, filter, el) {
+  sectionFilters[section] = filter;
+  el.closest('.filter-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderSection(section);
+}
+
+function filterSection(section) { renderSection(section); }
+
+function openPromptModal(id) {
+  const editing = id !== undefined;
+  document.getElementById('modal-prompt-title').textContent = editing ? 'Editar Prompt' : 'Nuevo Prompt';
+  document.getElementById('prompt-edit-id').value = id || '';
+  if (editing) {
+    const p = load('prompts').find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('prompt-name').value = p.name||'';
+    document.getElementById('prompt-cat').value = p.cat||'';
+    document.getElementById('prompt-ia').value = p.ia||'';
+    document.getElementById('prompt-content').value = p.content||'';
+    document.getElementById('prompt-desc').value = p.desc||'';
+    document.getElementById('prompt-tags').value = (p.tags||[]).join(', ');
+  } else {
+    ['prompt-name','prompt-cat','prompt-ia','prompt-content','prompt-desc','prompt-tags'].forEach(id => document.getElementById(id).value = '');
+  }
+  openModal('modal-prompt');
+}
+
+function savePrompt() {
+  const name    = document.getElementById('prompt-name').value.trim();
+  const content = document.getElementById('prompt-content').value.trim();
+  if (!name || !content) { toast('Nombre y contenido son obligatorios', 'error'); return; }
+  const editId = document.getElementById('prompt-edit-id').value;
+  const obj = {
+    id: editId || uid(),
+    name, content,
+    cat:     document.getElementById('prompt-cat').value.trim(),
+    ia:      document.getElementById('prompt-ia').value.trim(),
+    desc:    document.getElementById('prompt-desc').value.trim(),
+    tags:    document.getElementById('prompt-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    createdAt: editId ? (load('prompts').find(p=>p.id===editId)||{}).createdAt : Date.now()
+  };
+  const list = load('prompts');
+  if (editId) {
+    const idx = list.findIndex(p => p.id === editId);
+    if (idx >= 0) list[idx] = obj;
+  } else {
+    list.unshift(obj);
+    addToRecent({ type:'prompt', name, icon:'✨', createdAt: Date.now() });
+  }
+  save('prompts', list);
+  rebuildChips('prompts');
+  renderSection('prompts');
+  closeModal('modal-prompt');
+  toast(editId ? 'Prompt actualizado' : 'Prompt guardado', 'success');
+}
+
+function deletePrompt(id) {
+  showConfirm('🗑️','Eliminar Prompt','¿Seguro que quieres eliminar este prompt?', () => {
+    save('prompts', load('prompts').filter(p => p.id !== id));
+    rebuildChips('prompts');
+    renderSection('prompts');
+    toast('Prompt eliminado', 'info');
+  });
+}
+
+function viewPrompt(id) {
+  const p = load('prompts').find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('view-prompt-title').textContent = p.name;
+  document.getElementById('view-prompt-content').textContent = p.content;
+  const meta = document.getElementById('view-prompt-meta');
+  meta.innerHTML = [
+    p.cat    ? `<span class="tag tag-accent">${p.cat}</span>` : '',
+    p.ia     ? `<span class="tag tag-blue">${p.ia}</span>` : '',
+    ...(p.tags||[]).map(t => `<span class="tag">${t}</span>`)
+  ].join('');
+  document.getElementById('view-prompt-copy').onclick = () => {
+    navigator.clipboard.writeText(p.content).then(() => toast('Copiado al portapapeles', 'success'));
+  };
+  openModal('modal-view-prompt');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SITES CRUD
+═══════════════════════════════════════════════════════════ */
+function openSiteModal(id) {
+  const editing = id !== undefined;
+  document.getElementById('modal-site-title').textContent = editing ? 'Editar Sitio' : 'Añadir Sitio';
+  document.getElementById('site-edit-id').value = id || '';
+  if (editing) {
+    const s = load('sitios').find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('site-name').value = s.name||'';
+    document.getElementById('site-url').value = s.url||'';
+    document.getElementById('site-cat').value = s.cat||'';
+    document.getElementById('site-emoji').value = s.emoji||'';
+    document.getElementById('site-desc').value = s.desc||'';
+    document.getElementById('site-tags').value = (s.tags||[]).join(', ');
+  } else {
+    ['site-name','site-url','site-cat','site-emoji','site-desc','site-tags'].forEach(id => document.getElementById(id).value = '');
+  }
+  openModal('modal-site');
+}
+
+function saveSite() {
+  const name = document.getElementById('site-name').value.trim();
+  const url  = document.getElementById('site-url').value.trim();
+  if (!name || !url) { toast('Nombre y URL son obligatorios', 'error'); return; }
+  const editId = document.getElementById('site-edit-id').value;
+  const obj = {
+    id: editId || uid(),
+    name, url,
+    cat:   document.getElementById('site-cat').value.trim(),
+    emoji: document.getElementById('site-emoji').value.trim() || '🌐',
+    desc:  document.getElementById('site-desc').value.trim(),
+    tags:  document.getElementById('site-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    createdAt: editId ? (load('sitios').find(s=>s.id===editId)||{}).createdAt : Date.now()
+  };
+  const list = load('sitios');
+  if (editId) { const idx = list.findIndex(s => s.id === editId); if (idx >= 0) list[idx] = obj; }
+  else { list.unshift(obj); addToRecent({ type:'site', name, icon: obj.emoji, createdAt: Date.now() }); }
+  save('sitios', list);
+  rebuildChips('sitios');
+  renderSection('sitios');
+  closeModal('modal-site');
+  toast(editId ? 'Sitio actualizado' : 'Sitio guardado', 'success');
+}
+
+function deleteSite(id) {
+  showConfirm('🗑️','Eliminar Sitio','¿Seguro que quieres eliminar este sitio?', () => {
+    save('sitios', load('sitios').filter(s => s.id !== id));
+    rebuildChips('sitios');
+    renderSection('sitios');
+    toast('Sitio eliminado', 'info');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   OTROS CRUD
+═══════════════════════════════════════════════════════════ */
+const TIPO_EMOJI = { nota:'📝', codigo:'💻', comando:'⌨️', referencia:'📖', archivo:'📁', otro:'🔷' };
+
+function openOtroModal(id) {
+  const editing = id !== undefined;
+  document.getElementById('modal-otro-title').textContent = editing ? 'Editar Recurso' : 'Añadir Recurso';
+  document.getElementById('otro-edit-id').value = id || '';
+  if (editing) {
+    const o = load('otros').find(x => x.id === id);
+    if (!o) return;
+    document.getElementById('otro-name').value = o.name||'';
+    document.getElementById('otro-type').value = o.type||'nota';
+    document.getElementById('otro-cat').value = o.cat||'';
+    document.getElementById('otro-content').value = o.content||'';
+    document.getElementById('otro-desc').value = o.desc||'';
+    document.getElementById('otro-tags').value = (o.tags||[]).join(', ');
+  } else {
+    ['otro-name','otro-cat','otro-content','otro-desc','otro-tags'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('otro-type').value = 'nota';
+  }
+  openModal('modal-otro');
+}
+
+function saveOtro() {
+  const name    = document.getElementById('otro-name').value.trim();
+  const content = document.getElementById('otro-content').value.trim();
+  if (!name || !content) { toast('Nombre y contenido son obligatorios', 'error'); return; }
+  const editId = document.getElementById('otro-edit-id').value;
+  const type = document.getElementById('otro-type').value;
+  const obj = {
+    id: editId || uid(),
+    name, content, type,
+    cat:   document.getElementById('otro-cat').value.trim(),
+    desc:  document.getElementById('otro-desc').value.trim(),
+    tags:  document.getElementById('otro-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    createdAt: editId ? (load('otros').find(o=>o.id===editId)||{}).createdAt : Date.now()
+  };
+  const list = load('otros');
+  if (editId) { const idx = list.findIndex(o => o.id === editId); if (idx >= 0) list[idx] = obj; }
+  else { list.unshift(obj); addToRecent({ type:'otro', name, icon: TIPO_EMOJI[type]||'🔷', createdAt: Date.now() }); }
+  save('otros', list);
+  rebuildChips('otros');
+  renderSection('otros');
+  closeModal('modal-otro');
+  toast(editId ? 'Recurso actualizado' : 'Recurso guardado', 'success');
+}
+
+function deleteOtro(id) {
+  showConfirm('🗑️','Eliminar Recurso','¿Seguro que quieres eliminar este recurso?', () => {
+    save('otros', load('otros').filter(o => o.id !== id));
+    rebuildChips('otros');
+    renderSection('otros');
+    toast('Recurso eliminado', 'info');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER SECTIONS
+═══════════════════════════════════════════════════════════ */
+function renderSection(section) {
+  const list = load(section);
+  const q     = (document.getElementById(section.slice(0,-1)+'Search') || document.getElementById(section+'Search') || {value:''}).value.toLowerCase();
+
+  // Determine search input id
+  const searchInputMap = { prompts: 'promptSearch', sitios: 'sitioSearch', otros: 'otroSearch' };
+  const sq = (document.getElementById(searchInputMap[section]) || {value:''}).value.toLowerCase();
+
+  const filter = sectionFilters[section];
+  const view   = sectionViews[section];
+
+  const filtered = list.filter(item => {
+    const catOk = filter === 'all' || item.cat === filter || (item.tags||[]).includes(filter) || item.type === filter;
+    const txOk  = !sq || (item.name||'').toLowerCase().includes(sq) ||
+                  (item.desc||'').toLowerCase().includes(sq) ||
+                  (item.content||'').toLowerCase().includes(sq) ||
+                  (item.tags||[]).some(t => t.toLowerCase().includes(sq)) ||
+                  (item.cat||'').toLowerCase().includes(sq);
+    return catOk && txOk;
+  });
+
+  const container = document.getElementById(section + '-container');
+  const empty     = document.getElementById(section + '-empty');
+
+  const countEl = document.getElementById(section + '-count');
+  if (countEl) countEl.textContent = filtered.length + ' ' + (section === 'prompts' ? 'prompt' : section === 'sitios' ? 'sitio' : 'recurso') + (filtered.length !== 1 ? 's' : '');
+
+  if (filtered.length === 0) {
+    container.innerHTML = '';
+    container.className = '';
+    container.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  container.style.display = '';
+
+  if (section === 'prompts') {
+    container.className = view === 'grid' ? 'cards-grid' : 'list-view';
+    container.innerHTML = filtered.map(p => view === 'grid' ? renderPromptCard(p) : renderPromptListItem(p)).join('');
+  } else if (section === 'sitios') {
+    container.className = view === 'grid' ? 'cards-grid' : 'list-view';
+    container.innerHTML = filtered.map(s => view === 'grid' ? renderSiteCard(s) : renderSiteListItem(s)).join('');
+  } else if (section === 'otros') {
+    container.className = view === 'grid' ? 'cards-grid' : 'list-view';
+    container.innerHTML = filtered.map(o => view === 'grid' ? renderOtroCard(o) : renderOtroListItem(o)).join('');
+  }
+}
+
+function renderPromptCard(p) {
+  const tags = [...(p.cat?[p.cat]:[]), ...(p.ia?[p.ia]:[]), ...(p.tags||[])].slice(0,4);
+  const tagHtml = tags.map(t => `<span class="tag">${t}</span>`).join('');
+  return `
+    <div class="prompt-card">
+      <div class="prompt-card-header">
+        <div class="card-emoji">✨</div>
+        <div class="card-info" style="flex:1">
+          <div class="card-name">${esc(p.name)}</div>
+          ${p.desc ? `<div class="card-sub">${esc(p.desc)}</div>` : ''}
+        </div>
+        <div class="card-actions" style="opacity:1;flex-shrink:0">
+          <button class="btn btn-xs btn-ghost" onclick="viewPrompt('${p.id}')">👁</button>
+          <button class="btn btn-xs btn-ghost" onclick="openPromptModal('${p.id}')">✏️</button>
+          <button class="btn btn-xs btn-danger" onclick="deletePrompt('${p.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="prompt-card-body">${esc(p.content)}</div>
+      <div class="prompt-card-footer">
+        ${tagHtml}
+        <button class="btn btn-xs btn-ghost" style="margin-left:auto" onclick="navigator.clipboard.writeText(${JSON.stringify(p.content)}).then(()=>toast('Copiado','success'))">📋</button>
+      </div>
+    </div>`;
+}
+
+function renderPromptListItem(p) {
+  return `
+    <div class="list-item">
+      <div class="list-item-icon">✨</div>
+      <div class="list-item-main">
+        <div class="list-item-name">${esc(p.name)}</div>
+        <div class="list-item-desc">${esc((p.desc || p.content).slice(0,80))}…</div>
+      </div>
+      ${p.cat ? `<span class="tag">${esc(p.cat)}</span>` : ''}
+      <div class="list-item-actions">
+        <button class="btn btn-xs btn-ghost" onclick="viewPrompt('${p.id}')">👁</button>
+        <button class="btn btn-xs btn-ghost" onclick="openPromptModal('${p.id}')">✏️</button>
+        <button class="btn btn-xs btn-danger" onclick="deletePrompt('${p.id}')">🗑</button>
+        <button class="btn btn-xs btn-ghost" onclick="navigator.clipboard.writeText(${JSON.stringify(p.content)}).then(()=>toast('Copiado','success'))">📋</button>
+      </div>
+    </div>`;
+}
+
+function renderSiteCard(s) {
+  const tags = (s.tags||[]).slice(0,3);
+  const tagHtml = [s.cat ? `<span class="tag tag-accent">${esc(s.cat)}</span>` : '', ...tags.map(t=>`<span class="tag">${esc(t)}</span>`)].join('');
+  return `
+    <div class="site-card">
+      <div class="site-card-top">
+        <div class="site-favicon">${s.emoji||'🌐'}</div>
+        <div class="card-info" style="flex:1">
+          <div class="card-name">${esc(s.name)}</div>
+          <div class="card-sub" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--accent)">${esc(s.url.replace('https://','').split('/')[0])}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button class="btn btn-xs btn-ghost" onclick="openSiteModal('${s.id}')">✏️</button>
+          <button class="btn btn-xs btn-danger" onclick="deleteSite('${s.id}')">🗑</button>
+        </div>
+      </div>
+      ${s.desc ? `<div class="site-card-mid">${esc(s.desc)}</div>` : ''}
+      <a class="site-card-url" href="${s.url}" target="_blank">↗ ${esc(s.url)}</a>
+      <div class="site-card-footer">${tagHtml}</div>
+    </div>`;
+}
+
+function renderSiteListItem(s) {
+  return `
+    <div class="list-item">
+      <div class="list-item-icon">${s.emoji||'🌐'}</div>
+      <div class="list-item-main">
+        <div class="list-item-name">${esc(s.name)}</div>
+        <div class="list-item-desc">${esc(s.url)}</div>
+      </div>
+      ${s.cat ? `<span class="tag tag-accent">${esc(s.cat)}</span>` : ''}
+      <div class="list-item-actions">
+        <a class="btn btn-xs btn-ghost" href="${s.url}" target="_blank">↗</a>
+        <button class="btn btn-xs btn-ghost" onclick="openSiteModal('${s.id}')">✏️</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteSite('${s.id}')">🗑</button>
+      </div>
+    </div>`;
+}
+
+function renderOtroCard(o) {
+  const icon = TIPO_EMOJI[o.type]||'🔷';
+  const tags = (o.tags||[]).slice(0,3);
+  const tagHtml = [o.cat?`<span class="tag tag-blue">${esc(o.cat)}</span>`:'', ...tags.map(t=>`<span class="tag">${esc(t)}</span>`)].join('');
+  return `
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">${icon}</div>
+        <div class="card-info">
+          <div class="card-name">${esc(o.name)}</div>
+          ${o.desc ? `<div class="card-sub">${esc(o.desc)}</div>` : ''}
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-xs btn-ghost" onclick="openOtroModal('${o.id}')">✏️</button>
+          <button class="btn btn-xs btn-danger" onclick="deleteOtro('${o.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="card-body" style="font-family:'DM Mono',monospace;font-size:11.5px;">${esc(o.content)}</div>
+      <div class="card-footer">
+        ${tagHtml}
+        <button class="btn btn-xs btn-ghost" style="margin-left:auto" onclick="navigator.clipboard.writeText(${JSON.stringify(o.content)}).then(()=>toast('Copiado','success'))">📋</button>
+      </div>
+    </div>`;
+}
+
+function renderOtroListItem(o) {
+  const icon = TIPO_EMOJI[o.type]||'🔷';
+  return `
+    <div class="list-item">
+      <div class="list-item-icon">${icon}</div>
+      <div class="list-item-main">
+        <div class="list-item-name">${esc(o.name)}</div>
+        <div class="list-item-desc">${esc((o.desc||o.content).slice(0,80))}…</div>
+      </div>
+      ${o.cat ? `<span class="tag tag-blue">${esc(o.cat)}</span>` : ''}
+      <div class="list-item-actions">
+        <button class="btn btn-xs btn-ghost" onclick="openOtroModal('${o.id}')">✏️</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteOtro('${o.id}')">🗑</button>
+        <button class="btn btn-xs btn-ghost" onclick="navigator.clipboard.writeText(${JSON.stringify(o.content)}).then(()=>toast('Copiado','success'))">📋</button>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHIP BUILDER (dynamic filter chips)
+═══════════════════════════════════════════════════════════ */
+function rebuildChips(section) {
+  const list = load(section);
+  const catSet = new Set();
+  list.forEach(item => {
+    if (item.cat) catSet.add(item.cat);
+    if (item.type) catSet.add(item.type);
+  });
+
+  const container = document.getElementById(section + '-chips');
+  if (!container) return;
+  container.innerHTML = `<span class="chip active" data-filter="all" onclick="setSectionFilter('${section}','all',this)">Todos</span>`;
+  catSet.forEach(cat => {
+    const icon = TIPO_EMOJI[cat] || '';
+    container.innerHTML += `<span class="chip" data-filter="${cat}" onclick="setSectionFilter('${section}','${cat}',this)">${icon} ${cat}</span>`;
+  });
+  sectionFilters[section] = 'all';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════════════════ */
+function addToRecent(item) {
+  let recent = [];
+  try { recent = JSON.parse(localStorage.getItem('rh_recent') || '[]'); } catch {}
+  recent.unshift(item);
+  recent = recent.slice(0, 10);
+  localStorage.setItem('rh_recent', JSON.stringify(recent));
+}
+
+function renderDashboard() {
+  const customIAs = load('ias').length;
+  const totalIAs  = IA_DATA.length + customIAs;
+  const prompts   = load('prompts').length;
+  const sites     = load('sitios').length;
+  const otros     = load('otros').length;
+  const total     = totalIAs + prompts + sites + otros;
+
+  const stats = document.getElementById('dashStats');
+  stats.innerHTML = `
+    <div class="stat-card stat-accent" onclick="switchSection('ias', document.querySelector('[data-section=ias]'))">
+      <div class="stat-card-icon">🤖</div>
+      <div class="stat-card-num">${totalIAs}</div>
+      <div class="stat-card-label">IAs registradas</div>
+      <div class="stat-card-sub">${customIAs} añadidas por ti</div>
+    </div>
+    <div class="stat-card stat-amber" onclick="switchSection('prompts', document.querySelector('[data-section=prompts]'))">
+      <div class="stat-card-icon">✨</div>
+      <div class="stat-card-num">${prompts}</div>
+      <div class="stat-card-label">Prompts guardados</div>
+      <div class="stat-card-sub">Listos para reutilizar</div>
+    </div>
+    <div class="stat-card stat-blue" onclick="switchSection('sitios', document.querySelector('[data-section=sitios]'))">
+      <div class="stat-card-icon">🌐</div>
+      <div class="stat-card-num">${sites}</div>
+      <div class="stat-card-label">Sitios marcados</div>
+      <div class="stat-card-sub">URLs y herramientas web</div>
+    </div>
+    <div class="stat-card stat-purple" onclick="switchSection('otros', document.querySelector('[data-section=otros]'))">
+      <div class="stat-card-icon">📂</div>
+      <div class="stat-card-num">${otros}</div>
+      <div class="stat-card-label">Otros recursos</div>
+      <div class="stat-card-sub">Notas, snippets, etc.</div>
+    </div>
+  `;
+
+  // Recent
+  let recent = [];
+  try { recent = JSON.parse(localStorage.getItem('rh_recent') || '[]'); } catch {}
+  const rl = document.getElementById('recentList');
+  if (recent.length === 0) {
+    rl.innerHTML = `<div class="empty-state" style="padding:24px"><div class="empty-icon">📭</div><div class="empty-desc">Todavía no hay recursos recientes. ¡Empieza añadiendo prompts, sitios o recursos!</div></div>`;
+    return;
+  }
+  rl.innerHTML = recent.map(item => {
+    const typeLabel = { ia:'IA', prompt:'Prompt', site:'Sitio', otro:'Recurso' }[item.type] || item.type;
+    const d = item.createdAt ? new Date(item.createdAt).toLocaleDateString('es-MX',{day:'2-digit',month:'short'}) : '';
+    return `
+      <div class="recent-item">
+        <div class="recent-item-icon">${item.icon||'📌'}</div>
+        <div class="recent-item-info">
+          <div class="recent-item-name">${esc(item.name)}</div>
+          <div class="recent-item-meta">${typeLabel}${d ? ' · ' + d : ''}</div>
+        </div>
+        <span class="tag">${typeLabel}</span>
+      </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL SEARCH
+═══════════════════════════════════════════════════════════ */
+function globalSearchFn(q) {
+  if (!q) return;
+  // Focus ia search and filter
+  document.getElementById('iaSearch').value = q;
+  filterIATable();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   IMPORT / EXPORT
+═══════════════════════════════════════════════════════════ */
+function exportData() {
+  const data = {
+    version: 2,
+    exported: new Date().toISOString(),
+    ias_custom: load('ias'),
+    prompts: load('prompts'),
+    sitios: load('sitios'),
+    otros: load('otros')
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'resourcehub-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  toast('Datos exportados correctamente', 'success');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.ias_custom) save('ias', [...load('ias'), ...data.ias_custom.filter(i => !load('ias').some(x => x.id === i.id))]);
+      if (data.prompts)    save('prompts', [...load('prompts'), ...data.prompts.filter(i => !load('prompts').some(x => x.id === i.id))]);
+      if (data.sitios)     save('sitios', [...load('sitios'), ...data.sitios.filter(i => !load('sitios').some(x => x.id === i.id))]);
+      if (data.otros)      save('otros', [...load('otros'), ...data.otros.filter(i => !load('otros').some(x => x.id === i.id))]);
+      ['prompts','sitios','otros'].forEach(s => { rebuildChips(s); renderSection(s); });
+      renderAllIAs();
+      renderDashboard();
+      toast('Datos importados correctamente', 'success');
+    } catch { toast('Error al leer el archivo JSON', 'error'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function clearAllConfirm() {
+  showConfirm('⚠️', 'Limpiar todos los datos', 'Se eliminarán todos los prompts, sitios, otros recursos e IAs añadidas por ti. Los datos predeterminados de IAs NO se verán afectados.', () => {
+    Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem('rh_recent');
+    ['prompts','sitios','otros'].forEach(s => { rebuildChips(s); renderSection(s); });
+    renderAllIAs();
+    renderDashboard();
+    toast('Todos los datos han sido eliminados', 'info');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STORAGE INFO
+═══════════════════════════════════════════════════════════ */
+function renderStorageInfo() {
+  const keys = Object.entries(STORAGE_KEYS);
+  const info = document.getElementById('storage-info');
+  let total = 0;
+  const lines = keys.map(([name, key]) => {
+    const bytes = (localStorage.getItem(key)||'').length * 2;
+    total += bytes;
+    const count = load(name).length;
+    return `${name.padEnd(10)} →  ${count} items  (${formatBytes(bytes)})`;
+  });
+  lines.push('');
+  lines.push(`TOTAL       →  ${formatBytes(total)}`);
+  const cap = 5 * 1024 * 1024;
+  lines.push(`CAPACIDAD   →  ~5MB (${Math.round(total/cap*100)}% usado)`);
+  info.textContent = lines.join('\n');
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(2) + ' MB';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════════════════ */
+function esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+(function init() {
+  renderAllIAs();
+  ['prompts','sitios','otros'].forEach(s => { rebuildChips(s); renderSection(s); });
+  renderDashboard();
+  updateCounts();
+})();
+</script>
+</body>
+</html>
